@@ -11,19 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
-const findPlayer = `-- name: FindPlayer :one
+const getPermission = `-- name: GetPermission :one
 SELECT id, uuid, permission, value, server, world, expiry, contexts FROM luckperms_user_permissions
-WHERE uuid = $1 AND permission = $2
+WHERE uuid = $1 AND (permission = $2 OR permission = '*')
 LIMIT 1
 `
 
-type FindPlayerParams struct {
+type GetPermissionParams struct {
 	Uuid       uuid.UUID
 	Permission string
 }
 
-func (q *Queries) FindPlayer(ctx context.Context, arg FindPlayerParams) (LuckpermsUserPermission, error) {
-	row := q.db.QueryRowContext(ctx, findPlayer, arg.Uuid, arg.Permission)
+func (q *Queries) GetPermission(ctx context.Context, arg GetPermissionParams) (LuckpermsUserPermission, error) {
+	row := q.db.QueryRowContext(ctx, getPermission, arg.Uuid, arg.Permission)
 	var i LuckpermsUserPermission
 	err := row.Scan(
 		&i.ID,
