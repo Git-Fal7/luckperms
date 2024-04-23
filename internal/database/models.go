@@ -4,9 +4,7 @@
 
 package database
 
-import (
-	"github.com/google/uuid"
-)
+import ()
 
 type LuckpermsGroup struct {
 	Name string
@@ -14,11 +12,11 @@ type LuckpermsGroup struct {
 
 type LuckpermsUserPermission struct {
 	ID         int32
-	Uuid       uuid.UUID
+	Uuid       string
 	Permission string
-	Value      int32
+	Value      bool
 	Server     string
 	World      string
-	Expiry     int32
+	Expiry     int64
 	Contexts   string
 }

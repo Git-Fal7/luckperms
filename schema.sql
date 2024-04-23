@@ -1,14 +1,14 @@
 CREATE TABLE luckperms_user_permissions (
     id SERIAL PRIMARY KEY,
-    uuid uuid NOT NULL,
-    permission text NOT NULL,
-    value int NOT NULL,
-    server text NOT NULL,
-    world text NOT NULL,
-    expiry int NOT NULL,
-    contexts text NOT NULL
+    uuid varchar(36) NOT NULL,
+    permission varchar(200) NOT NULL,
+    value boolean NOT NULL,
+    server varchar(36) NOT NULL,
+    world varchar(64) NOT NULL,
+    expiry bigint NOT NULL,
+    contexts varchar(200) NOT NULL
 );
 
 CREATE TABLE luckperms_groups (
-  name text PRIMARY KEY NOT NULL
+  name varchar(36) PRIMARY KEY NOT NULL
 );

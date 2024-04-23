@@ -7,8 +7,6 @@ package database
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const getPermission = `-- name: GetPermission :one
@@ -18,7 +16,7 @@ LIMIT 1
 `
 
 type GetPermissionParams struct {
-	Uuid       uuid.UUID
+	Uuid       string
 	Permission string
 }
 
