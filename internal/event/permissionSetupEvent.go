@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"log"
 
 	"github.com/git-fal7/luckperms/internal/database"
 	"github.com/google/uuid"
@@ -21,6 +22,7 @@ func permSetupEvent() func(*proxy.PermissionsSetupEvent) {
 				Permission: perm,
 			})
 			if err != nil {
+				log.Printf("Couldnt get permission %s of player %s", perm, player.Username())
 				return permission.False
 			}
 			return permission.True
