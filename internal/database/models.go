@@ -10,6 +10,17 @@ type LuckpermsGroup struct {
 	Name string
 }
 
+type LuckpermsGroupPermission struct {
+	ID         int32
+	Name       string
+	Permission string
+	Value      bool
+	Server     string
+	World      string
+	Expiry     int64
+	Contexts   string
+}
+
 type LuckpermsUserPermission struct {
 	ID         int32
 	Uuid       string

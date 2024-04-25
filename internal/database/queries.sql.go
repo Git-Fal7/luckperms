@@ -9,29 +9,55 @@ import (
 	"context"
 )
 
-const getPermission = `-- name: GetPermission :one
-SELECT id, uuid, permission, value, server, world, expiry, contexts FROM luckperms_user_permissions
-WHERE uuid = $1 AND (permission = $2 OR permission = '*')
-LIMIT 1
+const getGroupsOfUser = `-- name: GetGroupsOfUser :many
+SELECT name FROM luckperms_groups
+WHERE EXISTS (SELECT id, uuid, permission, value, server, world, expiry, contexts FROM luckperms_user_permissions WHERE luckperms_user_permissions.uuid = $1 AND luckperms_groups.name = RIGHT(permission, length(luckperms_user_permissions.permission) - 6))
 `
 
-type GetPermissionParams struct {
+func (q *Queries) GetGroupsOfUser(ctx context.Context, uuid string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getGroupsOfUser, uuid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const userHasPermission = `-- name: UserHasPermission :one
+SELECT (CASE
+	WHEN EXISTS (SELECT 1
+				 FROM luckperms_user_permissions
+				 WHERE luckperms_user_permissions.uuid = $1 AND (luckperms_user_permissions.permission = $2 OR luckperms_user_permissions.permission = '*') AND value = true) THEN 1 
+	WHEN EXISTS (SELECT 1
+				 FROM luckperms_group_permissions
+				 WHERE EXISTS (SELECT id, uuid, permission, value, server, world, expiry, contexts 
+							   FROM luckperms_user_permissions 
+							   WHERE luckperms_user_permissions.uuid = $1 AND luckperms_group_permissions.name = RIGHT(permission, length(luckperms_user_permissions.permission) - 6)) AND (luckperms_group_permissions.permission = $2 OR luckperms_group_permissions.permission = '*') AND luckperms_group_permissions.value = true) THEN 1
+	ELSE 0 END) AS result LIMIT 1
+`
+
+type UserHasPermissionParams struct {
 	Uuid       string
 	Permission string
 }
 
-func (q *Queries) GetPermission(ctx context.Context, arg GetPermissionParams) (LuckpermsUserPermission, error) {
-	row := q.db.QueryRowContext(ctx, getPermission, arg.Uuid, arg.Permission)
-	var i LuckpermsUserPermission
-	err := row.Scan(
-		&i.ID,
-		&i.Uuid,
-		&i.Permission,
-		&i.Value,
-		&i.Server,
-		&i.World,
-		&i.Expiry,
-		&i.Contexts,
-	)
-	return i, err
+func (q *Queries) UserHasPermission(ctx context.Context, arg UserHasPermissionParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, userHasPermission, arg.Uuid, arg.Permission)
+	var result int32
+	err := row.Scan(&result)
+	return result, err
 }

@@ -15,7 +15,7 @@ func permSetupEvent() func(*proxy.PermissionsSetupEvent) {
 			if !ok { // Means that its not a player (the console).
 				return permission.True
 			}
-			_, err := database.DB.GetPermission(context.Background(), database.GetPermissionParams{
+			_, err := database.DB.UserHasPermission(context.Background(), database.UserHasPermissionParams{
 				Uuid:       player.ID().String(),
 				Permission: perm,
 			})
