@@ -1,9 +1,7 @@
 package event
 
 import (
-	"context"
-
-	"github.com/git-fal7/luckperms/internal/database"
+	"github.com/git-fal7/luckperms/pkg/utils"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 	"go.minekube.com/gate/pkg/util/permission"
 )
@@ -15,14 +13,10 @@ func permSetupEvent() func(*proxy.PermissionsSetupEvent) {
 			if !ok { // Means that its not a player (the console).
 				return permission.True
 			}
-			result, err := database.DB.UserHasPermission(context.Background(), database.UserHasPermissionParams{
-				Uuid:       player.ID().String(),
-				Permission: perm,
-			})
-			if err != nil || result == 0 {
-				return permission.False
+			if utils.PlayerHasPermission(player.ID(), perm) {
+				return permission.True
 			}
-			return permission.True
+			return permission.False
 		})
 	}
 }
